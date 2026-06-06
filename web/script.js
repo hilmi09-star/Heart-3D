@@ -30,7 +30,11 @@ const frequencies = {
     2: 329.63, // E4
     3: 392.00, // G4
     5: 440.00, // A4
-    4: 523.25  // C5
+    4: 523.25, // C5
+    6: 587.33, // D5
+    7: 659.25, // E5
+    8: 329.63, // E4
+    9: 523.25  // C5
 };
 
 // Coordinates Arrays
@@ -40,6 +44,14 @@ let colSaturn = [];
 let posHeart = [];
 let posILoveYou = [];
 let posHbdPrincess = [];
+let posTulipClosed = [];
+let posTulipOpen = [];
+let colTulipClosed = [];
+let colTulipOpen = [];
+let posBox = [];
+let colBox = [];
+let posSpiral = [];
+let colSpiral = [];
 
 // Current particle state for interpolation
 let currentPositions = [];
@@ -121,6 +133,159 @@ function initCoordinates() {
             (y * 0.85) + 0.5,
             z
         ));
+    }
+
+    // Mode 6 & 7: Tulip Closed & Open
+    posTulipClosed = [];
+    posTulipOpen = [];
+    colTulipClosed = [];
+    colTulipOpen = [];
+
+    const stemCount = 300;
+    const leafCount = 300;
+    const petalCount = 900;
+
+    // Stem: a vertical line in the middle
+    for (let i = 0; i < stemCount; i++) {
+        const yVal = randomRange(-2.8, -0.5);
+        const rVal = randomRange(0, 0.04);
+        const thetaVal = randomRange(0, 2 * Math.PI);
+        const xVal = rVal * Math.cos(thetaVal);
+        const zVal = rVal * Math.sin(thetaVal);
+
+        const pos = new THREE.Vector3(xVal, yVal, zVal);
+        posTulipClosed.push(pos.clone());
+        posTulipOpen.push(pos.clone());
+
+        const stemColor = new THREE.Color(0.08, 0.45, 0.15);
+        colTulipClosed.push(stemColor);
+        colTulipOpen.push(stemColor);
+    }
+
+    // Leaves: two curved leaves extending out
+    for (let i = 0; i < leafCount; i++) {
+        const side = i < leafCount / 2 ? -1 : 1;
+        const yVal = randomRange(-2.5, -1.0);
+        const t = (yVal - (-2.5)) / 1.5; 
+        
+        const curve = Math.sin(t * Math.PI);
+        const xVal = side * (curve * 0.8) + randomRange(-0.05, 0.05);
+        const zVal = side * (curve * 0.2) + randomRange(-0.05, 0.05);
+
+        const pos = new THREE.Vector3(xVal, yVal, zVal);
+        posTulipClosed.push(pos.clone());
+        posTulipOpen.push(pos.clone());
+
+        const leafColor = new THREE.Color(0.05, 0.55, 0.25);
+        colTulipClosed.push(leafColor);
+        colTulipOpen.push(leafColor);
+    }
+
+    // Petals: the flower cup (bloom)
+    for (let i = 0; i < petalCount; i++) {
+        const h = randomRange(0, 1.5);
+        const theta = randomRange(0, 2 * Math.PI);
+        
+        // Closed tulip petals
+        const rClosed = 0.55 * Math.sin((h / 1.5) * Math.PI) * (1.0 + 0.12 * Math.cos(3 * theta));
+        const xClosed = rClosed * Math.cos(theta);
+        const zClosed = rClosed * Math.sin(theta);
+        const yClosed = h - 0.5;
+
+        // Open/Blooming tulip petals
+        let rOpen;
+        if (h < 0.4) {
+            rOpen = 0.55 * Math.sin((h / 1.5) * Math.PI) * (1.0 + 0.12 * Math.cos(3 * theta));
+        } else {
+            const tOpen = (h - 0.4) / 1.1; 
+            const baseR = 0.55 * Math.sin((0.4 / 1.5) * Math.PI);
+            rOpen = (baseR + 1.1 * Math.pow(tOpen, 1.5)) * (1.0 + 0.22 * Math.cos(3 * theta));
+        }
+        const xOpen = rOpen * Math.cos(theta);
+        const zOpen = rOpen * Math.sin(theta);
+        const yOpen = h - 0.5 - (h > 0.4 ? (h - 0.4) * 0.15 : 0);
+
+        posTulipClosed.push(new THREE.Vector3(xClosed, yClosed, zClosed));
+        posTulipOpen.push(new THREE.Vector3(xOpen, yOpen, zOpen));
+
+        const tCol = h / 1.5; 
+        const baseColor = new THREE.Color(1.0, 0.7, 0.2);
+        const tipColor = new THREE.Color(1.0, 0.1, 0.5);
+        const pColor = baseColor.clone().lerp(tipColor, tCol);
+        
+        colTulipClosed.push(pColor);
+        colTulipOpen.push(pColor);
+    }
+
+    // Mode 8: 3D Gift Box
+    posBox = [];
+    colBox = [];
+    const particlesPerFace = Math.floor(NUM_PARTICLES / 6);
+    
+    // Ribbon gold/yellow color
+    const ribbonColor = new THREE.Color(1.0, 0.8, 0.0);
+    // Box royal purple/pink color
+    const boxColor = new THREE.Color(0.5, 0.1, 0.9);
+    
+    for (let face = 0; face < 6; face++) {
+        const count = face === 5 ? NUM_PARTICLES - particlesPerFace * 5 : particlesPerFace;
+        for (let i = 0; i < count; i++) {
+            const u = randomRange(-1.2, 1.2);
+            const v = randomRange(-1.2, 1.2);
+            let x = 0, y = 0, z = 0;
+            
+            if (face === 0) { x = u; y = v; z = 1.2; }       // Front
+            else if (face === 1) { x = u; y = v; z = -1.2; }  // Back
+            else if (face === 2) { x = u; y = 1.2; z = v; }   // Top
+            else if (face === 3) { x = u; y = -1.2; z = v; }  // Bottom
+            else if (face === 4) { x = 1.2; y = u; z = v; }   // Right
+            else if (face === 5) { x = -1.2; y = u; z = v; }  // Left
+            
+            posBox.push(new THREE.Vector3(x, y, z));
+            
+            // Ribbon checks: if point lies along coordinate axes, color it ribbonColor
+            const ribbonWidth = 0.22;
+            let isRibbon = false;
+            if (face === 0 || face === 1) { // Front/Back
+                isRibbon = Math.abs(x) < ribbonWidth || Math.abs(y) < ribbonWidth;
+            } else if (face === 2 || face === 3) { // Top/Bottom
+                isRibbon = Math.abs(x) < ribbonWidth || Math.abs(z) < ribbonWidth;
+            } else if (face === 4 || face === 5) { // Right/Left
+                isRibbon = Math.abs(y) < ribbonWidth || Math.abs(z) < ribbonWidth;
+            }
+            colBox.push(isRibbon ? ribbonColor : boxColor);
+        }
+    }
+
+    // Mode 9: Expanding Spiral Nebula (Magical spiral)
+    posSpiral = [];
+    colSpiral = [];
+    for (let i = 0; i < NUM_PARTICLES; i++) {
+        // Logarithmic spiral math: r = a * theta
+        const theta = randomRange(0, 8 * Math.PI);
+        const r = 0.16 * theta;
+        
+        // Two arms
+        const armAngle = i % 2 === 0 ? theta : theta + Math.PI;
+        
+        const x = r * Math.cos(armAngle);
+        const z = r * Math.sin(armAngle);
+        // Vertical thickness
+        const y = randomRange(-0.5, 0.5) * (1.0 - r / 5.0);
+        
+        posSpiral.push(new THREE.Vector3(x, y, z));
+        
+        // Colors: mix of neon pink, teal, and gold particles
+        let pColor;
+        const rand = Math.random();
+        if (rand < 0.45) {
+            pColor = new THREE.Color(1.0, 0.1, 0.6); // Hot Pink
+        } else if (rand < 0.8) {
+            pColor = new THREE.Color(0.0, 0.85, 0.85); // Electric Teal
+        } else {
+            pColor = new THREE.Color(1.0, 0.75, 0.2); // Warm Gold
+        }
+        colSpiral.push(pColor);
     }
 
     // Mode 3 & 5: Text Shapes (Extracted from 2D Canvas)
@@ -284,6 +449,10 @@ function updateParticles() {
     else if (targetMode === 3) targetPosSrc = posILoveYou;
     else if (targetMode === 4) targetPosSrc = posHeart;
     else if (targetMode === 5) targetPosSrc = posHbdPrincess;
+    else if (targetMode === 6) targetPosSrc = posTulipClosed;
+    else if (targetMode === 7) targetPosSrc = posTulipOpen;
+    else if (targetMode === 8) targetPosSrc = posBox;
+    else if (targetMode === 9) targetPosSrc = posSpiral;
 
     // Apply colors and positions
     for (let i = 0; i < NUM_PARTICLES; i++) {
@@ -308,6 +477,14 @@ function updateParticles() {
             tCol = colors.heart;
         } else if (targetMode === 5) {
             tCol = colors.hbd;
+        } else if (targetMode === 6) {
+            tCol = colTulipClosed[i];
+        } else if (targetMode === 7) {
+            tCol = colTulipOpen[i];
+        } else if (targetMode === 8) {
+            tCol = colBox[i];
+        } else if (targetMode === 9) {
+            tCol = colSpiral[i];
         }
 
         currentColors[i].r += (tCol.r - currentColors[i].r) * 0.12;
@@ -335,6 +512,8 @@ function animate() {
     handZ += (targetHandZ - handZ) * 0.15;
 
     // Apply rotation based on current mode (matching Python logic)
+    pointsMesh.rotation.x = 0; // Default flat x-rotation
+    
     if (targetMode === 1) {
         rotationAngle += 0.005; 
         pointsMesh.position.set(0, 0, 0);
@@ -353,6 +532,19 @@ function animate() {
     } else if (targetMode === 5) {
         rotationAngle = 0; // Static text
         pointsMesh.position.set(handX, handY, handZ + 12);
+        pointsMesh.rotation.z = 0;
+    } else if (targetMode === 6 || targetMode === 7) {
+        rotationAngle += 0.008; // Slow rotation
+        pointsMesh.position.set(0, 0.5, 0); // Centered, slightly lifted
+        pointsMesh.rotation.z = 0;
+    } else if (targetMode === 8) {
+        rotationAngle += 0.012; // box rotation
+        pointsMesh.position.set(0, 0, 0);
+        pointsMesh.rotation.z = 0.25; // Tilt box slightly
+        pointsMesh.rotation.x = 0.25;
+    } else if (targetMode === 9) {
+        rotationAngle += 0.045; // spiral swirling fast
+        pointsMesh.position.set(0, 0, 0);
         pointsMesh.rotation.z = 0;
     }
 
@@ -424,11 +616,25 @@ function setMode(modeNum) {
 
 // Fallback Keyboard controls
 window.addEventListener('keydown', (e) => {
+    const slideLock = document.getElementById('slide-lock');
+    if (slideLock && slideLock.classList.contains('active')) {
+        if (e.key >= '0' && e.key <= '9') {
+            pressKey(e.key);
+        } else if (e.key === 'Backspace') {
+            deleteKey();
+        } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+            clearKeys();
+        }
+        return;
+    }
+
     if (e.key === '1') setMode(1);
     if (e.key === '2') setMode(2);
     if (e.key === '3') setMode(3);
     if (e.key === '4') setMode(4);
     if (e.key === '5') setMode(5);
+    if (e.key === '6') setMode(6);
+    if (e.key === '7') setMode(7);
 });
 
 // Manual UI buttons callback
@@ -715,46 +921,385 @@ function toggleBGM(bgMusic, musicBtn, soundIndicator) {
     }
 }
 
-// Setup Intro Screen trigger button
-function setupIntroButton() {
-    const startBtn = document.getElementById('start-btn');
-    const introScreen = document.getElementById('intro-screen');
+// ==========================================
+// PASSCODE LOCK SYSTEM (070605)
+// ==========================================
+let enteredCode = "";
+const correctCode = "070605";
+
+window.pressKey = function(num) {
+    if (enteredCode.length >= 6) return;
+    enteredCode += num;
+    updatePasscodeDots();
+    
+    // Play short chime per tap
+    playChime(300 + parseInt(num) * 25, 'sine', 0.1);
+    
+    if (enteredCode.length === 6) {
+        setTimeout(checkPasscode, 300);
+    }
+};
+
+window.deleteKey = function() {
+    if (enteredCode.length === 0) return;
+    enteredCode = enteredCode.slice(0, -1);
+    updatePasscodeDots();
+    playChime(250, 'sine', 0.1);
+};
+
+window.clearKeys = function() {
+    enteredCode = "";
+    updatePasscodeDots();
+    playChime(200, 'sine', 0.15);
+};
+
+function updatePasscodeDots() {
+    const dots = document.querySelectorAll('#passcode-dots .dot');
+    dots.forEach((dot, idx) => {
+        if (idx < enteredCode.length) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+}
+
+function checkPasscode() {
+    const dotsContainer = document.getElementById('passcode-dots');
+    const slideLock = document.getElementById('slide-lock');
+    const slide1 = document.getElementById('slide-1');
+    
+    if (enteredCode === correctCode) {
+        // Success: play sweet unlocked chime
+        playChime(523.25, 'sine', 0.4); // C5
+        setTimeout(() => playChime(659.25, 'sine', 0.6), 150); // E5
+        
+        if (slideLock) slideLock.classList.remove('active');
+        if (slide1) slide1.classList.add('active');
+        
+        // Clear passcode
+        enteredCode = "";
+        updatePasscodeDots();
+    } else {
+        // Fail: shake and flash red
+        if (dotsContainer) dotsContainer.classList.add('shake');
+        playChime(150, 'sawtooth', 0.45); 
+        
+        setTimeout(() => {
+            if (dotsContainer) dotsContainer.classList.remove('shake');
+            enteredCode = "";
+            updatePasscodeDots();
+        }, 500);
+    }
+}
+
+// ==========================================
+// INTERACTIVE ENVELOPE & TYPEWRITING SURPRISE
+// ==========================================
+function setupEnvelopeAndTyping() {
+    const envelope = document.getElementById('envelope');
+    const envelopeWrapper = document.getElementById('envelope-wrapper');
+    const letterCard = document.getElementById('romantic-letter-card');
+    
+    if (envelope) {
+        envelope.addEventListener('click', () => {
+            // Play envelope tearing sound (chime G5)
+            playChime(784.00, 'sine', 0.6);
+            
+            // Fade out envelope
+            if (envelopeWrapper) envelopeWrapper.classList.add('fade-out');
+            
+            setTimeout(() => {
+                if (envelopeWrapper) envelopeWrapper.style.display = 'none';
+                
+                // Show letter card
+                if (letterCard) {
+                    letterCard.classList.remove('hidden');
+                    setTimeout(() => {
+                        letterCard.classList.add('show');
+                        // Start typing effect after slide-in
+                        startLetterTyping();
+                    }, 50);
+                }
+            }, 800);
+        });
+    }
+}
+
+function startLetterTyping() {
+    const salutationEl = document.getElementById('type-salutation');
+    const p1El = document.getElementById('type-p1');
+    const p2El = document.getElementById('type-p2');
+    const p3El = document.getElementById('type-p3');
+    const signatureEl = document.getElementById('type-signature');
+    const footerEl = document.getElementById('letter-footer');
+    
+    const salutationTxt = "Dear Princess,";
+    const p1Txt = "Hari ini adalah hari yang sangat istimewa, hari di mana dunia menjadi lebih indah karena kehadiranmu. Selamat ulang tahun! 💖";
+    const p2Txt = "Setiap detik bersamamu adalah momen yang sangat berharga. Aku ingin mempersembahkan kejutan kecil ini untukmu—sebuah nebula bintang interaktif yang kuciptakan khusus untuk Princess-ku.";
+    const p3Txt = "Mari kita mulai dengan sekuntum bunga spesial yang mekar hanya untukmu. Klik tombol di bawah ini ya, sayang.";
+    
+    // Type Salutation
+    typeText(salutationEl, salutationTxt, 45, () => {
+        // Type P1
+        typeText(p1El, p1Txt, 25, () => {
+            // Type P2
+            typeText(p2El, p2Txt, 25, () => {
+                // Type P3
+                typeText(p3El, p3Txt, 25, () => {
+                    // Fade in signature and button
+                    if (signatureEl) signatureEl.style.opacity = '1';
+                    if (footerEl) {
+                        footerEl.style.opacity = '1';
+                        footerEl.style.pointerEvents = 'auto';
+                    }
+                    // Success play high bell tone (C6)
+                    playChime(1046.50, 'sine', 1.0);
+                });
+            });
+        });
+    });
+}
+
+function typeText(element, text, speed, callback) {
+    if (!element) {
+        if (callback) callback();
+        return;
+    }
+    let i = 0;
+    element.innerHTML = "";
+    
+    // Typewriter blinking cursor
+    const cursor = document.createElement('span');
+    cursor.className = 'typewriter-cursor';
+    cursor.innerHTML = '|';
+    element.appendChild(cursor);
+
+    const interval = setInterval(() => {
+        if (i < text.length) {
+            const char = text.charAt(i);
+            cursor.before(char);
+            i++;
+            
+            // Soft mechanical tick sound (highly aesthetic)
+            if (i % 4 === 0) {
+                playSoftTick();
+            }
+        } else {
+            clearInterval(interval);
+            cursor.remove();
+            if (callback) callback();
+        }
+    }, speed);
+}
+
+function playSoftTick() {
+    try {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800 + Math.random() * 400, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.008, audioCtx.currentTime); 
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.02);
+                osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.03);
+    } catch (e) {}
+}
+
+// Spawns a dense, layered heart-shaped flower bouquet overlaying the screen
+function createFlowerBouquet() {
+    const overlay = document.getElementById('flower-bouquet-overlay');
+    if (!overlay) return;
+    overlay.innerHTML = "";
+    
+    const flowerEmojis = ['🌸', '🌹', '🌺', '🌻', '🌼', '🌷', '🏵️', '💮'];
+    const totalFlowers = 350; // Increased significantly to make it very full and dense
+    
+    for (let i = 0; i < totalFlowers; i++) {
+        // Parametric heart shape formula
+        const t = Math.random() * 2 * Math.PI;
+        
+        // 15% on the exact outline, 85% distributed uniformly inside using square root of random
+        const isOnOutline = Math.random() < 0.15;
+        const r = isOnOutline ? 1.0 : Math.sqrt(Math.random()); 
+        
+        const x = 16 * Math.pow(Math.sin(t), 3) * r;
+        const y = (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * r;
+        
+        // Map to container coordinates
+        const scaleX = 2.7; 
+        const scaleY = 2.7; 
+        
+        // Add a small jitter for organic fluffy arrangement and to fill any micro-gaps
+        const left = 50 + (x * scaleX) + randomRange(-1.5, 1.5);
+        const top = 50 - (y * scaleY) + randomRange(-1.5, 1.5); 
+        
+        const rot = randomRange(-180, 180);
+        // Slightly random size, large enough to overlap and cover any holes
+        const size = randomRange(1.8, 3.5); 
+        const delay = randomRange(0, 2.0); 
+        
+        const flower = document.createElement('div');
+        flower.className = 'bouquet-flower';
+        flower.innerHTML = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
+        flower.style.left = `${left}%`;
+        flower.style.top = `${top}%`;
+        flower.style.fontSize = `${size}rem`;
+        flower.style.setProperty('--rot', `${rot}deg`);
+        flower.style.transitionDelay = `${delay}s`;
+        flower.style.zIndex = Math.floor(r * 10);
+        
+        overlay.appendChild(flower);
+        
+        // Trigger transition on next frame
+        setTimeout(() => {
+            flower.classList.add('bloom');
+        }, 50);
+    }
+}
+
+// Setup Romantic Slides navigation controller
+function setupSlidesController() {
+    const btnToSlide2 = document.getElementById('btn-to-slide-2');
+    const btnToSlide3 = document.getElementById('btn-to-slide-3');
+    const btnToSlide4 = document.getElementById('btn-to-slide-4');
+    
+    const slide1 = document.getElementById('slide-1');
+    const slide2 = document.getElementById('slide-2');
+    const slide3 = document.getElementById('slide-3');
+    const slidesWrapper = document.getElementById('slides-wrapper');
+    const tulipStatusText = document.getElementById('tulip-status-text');
+    const tulipBadge = document.querySelector('.tulip-status-badge');
+    
     const bgMusic = document.getElementById('bg-music');
     const musicBtn = document.getElementById('music-toggle');
     const soundIndicator = document.getElementById('sound-indicator');
+    const overlayContainer = document.querySelector('.overlay-container');
+    const cameraBox = document.getElementById('camera-box');
 
-    startBtn.addEventListener('click', () => {
-        // Initialize Web Audio API
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        
-        // Play E4 chime sound effect on click
-        playChime(329.63, 'sine', 0.8);
+    // Initialize envelope opening and text typing effects
+    setupEnvelopeAndTyping();
 
-        // Try to autoplay BGM
-        bgMusic.play()
-            .then(() => {
-                musicBtn.classList.add('playing');
-                musicBtn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Hentikan Musik`;
-                soundIndicator.classList.add('active');
-            })
-            .catch(err => {
-                console.warn("Autoplay audio was blocked even with click event:", err);
-            });
+    const giftBoxInteractive = document.getElementById('gift-box-interactive');
+    const giftBoxContainer = document.getElementById('gift-box-container');
+    const flowerOverlay = document.getElementById('flower-bouquet-overlay');
 
-        // Fade out screen
-        introScreen.classList.add('fade-out');
+    // Slide 1 -> Slide 2 (Tulip Blooming Slide)
+    if (btnToSlide2) {
+        btnToSlide2.addEventListener('click', () => {
+            // Initialize Web Audio API on first interaction
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            // Play opening sound effect (G4 chime)
+            playChime(392.00, 'sine', 0.8);
 
-        // Start hand tracker after transition
-        setTimeout(() => {
-            introScreen.style.display = 'none';
-            initMediaPipe();
-        }, 1200);
-    });
+            // Try to play BGM
+            bgMusic.play()
+                .then(() => {
+                    musicBtn.classList.add('playing');
+                    musicBtn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Hentikan Musik`;
+                    soundIndicator.classList.add('active');
+                })
+                .catch(err => {
+                    console.warn("Autoplay BGM blocked:", err);
+                });
+
+            // Switch slides
+            slide1.classList.remove('active');
+            slide2.classList.add('active');
+
+            // Reset Slide 2 Gift Box
+            if (giftBoxContainer) {
+                giftBoxContainer.classList.remove('fade-out');
+                giftBoxContainer.style.display = 'flex';
+            }
+            if (flowerOverlay) {
+                flowerOverlay.innerHTML = "";
+            }
+
+            // Transition Three.js to Space (Mode 1)
+            setMode(1);
+        });
+    }
+
+    // Open Gift Box and explode particles into a spiral, blooming the flower heart
+    if (giftBoxInteractive) {
+        giftBoxInteractive.addEventListener('click', () => {
+            // Play magical explosion chimes
+            playChime(587.33, 'sine', 0.5);
+            setTimeout(() => playChime(880.00, 'sine', 0.8), 100);
+
+            // Fade out the interactive gift box container
+            if (giftBoxContainer) {
+                giftBoxContainer.classList.add('fade-out');
+                setTimeout(() => {
+                    giftBoxContainer.style.display = 'none';
+                }, 600);
+            }
+
+            // Transition Three.js to Expanding Spiral Nebula (Mode 9)
+            setMode(9);
+
+            // Spawn the HTML flower heart bouquet
+            createFlowerBouquet();
+
+            // Staggered bloom lasts ~2.0s + 1.4s transitions + 1.4s pause = 4.8 seconds.
+            // After 4.8 seconds, automatically transition straight to Slide 3 (Photo Gallery)
+            setTimeout(() => {
+                // Play soft transition chime (A4)
+                playChime(440.00, 'sine', 0.6);
+                
+                // Transition slides
+                slide2.classList.remove('active');
+                slide3.classList.add('active');
+
+                // Transition Three.js back to Space (Mode 1)
+                setMode(1);
+            }, 4800);
+        });
+    }
+
+    // Slide 2 -> Slide 3 (Memorial Photo Gallery)
+    if (btnToSlide3) {
+        btnToSlide3.addEventListener('click', () => {
+            playChime(440.00, 'sine', 0.6); // transition sound (A4)
+            
+            slide2.classList.remove('active');
+            slide3.classList.add('active');
+
+            // Transition Three.js back to a soft, romantic space (Mode 1)
+            setMode(1);
+        });
+    }
+
+    // Slide 3 -> Slide 4 (Game Screen)
+    if (btnToSlide4) {
+        btnToSlide4.addEventListener('click', () => {
+            playChime(523.25, 'sine', 0.8); // chime for starting game
+            
+            // Hide slides wrapper completely
+            slidesWrapper.classList.add('fade-out');
+
+            setTimeout(() => {
+                slidesWrapper.style.display = 'none';
+                
+                // Show Three.js control panels and camera container
+                if (overlayContainer) overlayContainer.classList.add('show');
+                if (cameraBox) cameraBox.classList.add('show');
+
+                // Initialize MediaPipe Hand tracking
+                initMediaPipe();
+            }, 1200);
+        });
+    }
 }
 
 // Wait for fonts to load to draw the text shapes perfectly
@@ -769,6 +1314,6 @@ window.addEventListener('load', () => {
     setupDraggableCamera();
     setupCameraWindowControls();
     setupBGMControls();
-    setupIntroButton();
+    setupSlidesController();
     animate();
 });

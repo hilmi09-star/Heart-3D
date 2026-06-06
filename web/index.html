@@ -28,30 +28,164 @@
     <!-- ==========================================
          HALAMAN PENGANTAR / SURAT CINTA (INTRO SCREEN)
          ========================================== -->
-    <div id="intro-screen" class="intro-screen">
+    <!-- ==========================================
+         ROMANTIC MULTI-SLIDE SURPRISE CONTAINER
+         ========================================== -->
+    <div id="slides-wrapper" class="slides-wrapper">
         <div class="stars-bg-overlay"></div>
-        <div class="letter-card">
-            <div class="letter-header">
-                <i class="fa-solid fa-heart pulse-heart"></i>
-                <h2>For My Princess 👑</h2>
+        
+        <!-- SLIDE 0: PHONE PASSCODE LOCK SCREEN -->
+        <div id="slide-lock" class="romance-slide active">
+            <div class="lock-card">
+                <div class="gift-anim-container">
+                    <i class="fa-solid fa-gift gift-bounce"></i>
+                </div>
+                <h2 class="lock-title">Enter Passcode 🔒</h2>
+                <p class="lock-subtitle">Masukkan tanggal hari ini kita yaa sayang</p>
+                
+                <!-- Display dots for password -->
+                <div class="passcode-dots" id="passcode-dots">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                
+                <!-- Passcode Numeric Keypad -->
+                <div class="keypad">
+                    <button class="key-btn" onclick="pressKey('1')">1</button>
+                    <button class="key-btn" onclick="pressKey('2')">2</button>
+                    <button class="key-btn" onclick="pressKey('3')">3</button>
+                    <button class="key-btn" onclick="pressKey('4')">4</button>
+                    <button class="key-btn" onclick="pressKey('5')">5</button>
+                    <button class="key-btn" onclick="pressKey('6')">6</button>
+                    <button class="key-btn" onclick="pressKey('7')">7</button>
+                    <button class="key-btn" onclick="pressKey('8')">8</button>
+                    <button class="key-btn" onclick="pressKey('9')">9</button>
+                    <button class="key-btn text-key" onclick="clearKeys()">C</button>
+                    <button class="key-btn" onclick="pressKey('0')">0</button>
+                    <button class="key-btn text-key" onclick="deleteKey()"><i class="fa-solid fa-backspace"></i></button>
+                </div>
             </div>
-            <div class="letter-body">
-                <p class="salutation">Dear Princess,</p>
-                <p class="message-paragraph">
-                    Hari ini adalah hari yang sangat istimewa, hari di mana dunia menjadi lebih indah karena kehadiranmu. Selamat ulang tahun! 💖
-                </p>
-                <p class="message-paragraph">
-                    Aku ingin mempersembahkan sesuatu yang berbeda untukmu. Sebuah dunia bintang nebula kecil yang diciptakan khusus untuk menari mengikuti gerakan tanganmu. 
-                </p>
-                <p class="message-paragraph">
-                    Izinkan kamera di perangkatmu setelah mengklik tombol di bawah, ikuti panduan gestur tangannya, dan lihat pesan bintang yang tersimpan di dalamnya.
-                </p>
-                <p class="signature">With love, <br><span>Your Prince</span></p>
+        </div>
+        
+        <!-- SLIDE 1: ROMANTIC MESSAGE / LETTER -->
+        <div id="slide-1" class="romance-slide">
+            <!-- Envelope wrapper -->
+            <div id="envelope-wrapper" class="envelope-wrapper">
+                <div class="envelope" id="envelope">
+                    <div class="envelope-flap"></div>
+                    <div class="envelope-paper">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div class="envelope-seal-container">
+                        <i class="fa-solid fa-heart beating-heart" id="envelope-seal"></i>
+                    </div>
+                </div>
+                <p class="envelope-instruction">Ketuk kado hati untuk membuka surat 💖</p>
             </div>
-            <div class="letter-footer">
-                <button id="start-btn" class="btn btn-primary pulse-btn">
-                    Buka Kejutan 🎁
-                </button>
+
+            <!-- Letter card (initially hidden/scaled down) -->
+            <div class="letter-card hidden" id="romantic-letter-card">
+                <div class="letter-header">
+                    <i class="fa-solid fa-heart pulse-heart"></i>
+                    <h2>For My Princess 👑</h2>
+                </div>
+                <div class="letter-body">
+                    <p class="salutation" id="type-salutation"></p>
+                    <p class="message-paragraph" id="type-p1"></p>
+                    <p class="message-paragraph" id="type-p2"></p>
+                    <p class="message-paragraph" id="type-p3"></p>
+                    <p class="signature" id="type-signature" style="opacity: 0; transition: opacity 1s ease;">With love, <br><span>Your Prince</span></p>
+                </div>
+                <div class="letter-footer" id="letter-footer" style="opacity: 0; transition: opacity 1s ease; pointer-events: none;">
+                    <button id="btn-to-slide-2" class="btn btn-primary pulse-btn">
+                        Buka Kejutan 🎁
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: THE MAGIC GIFT BOX & FLOWER HEART BLOOM -->
+        <div id="slide-2" class="romance-slide">
+            <!-- Flower Heart Bouquet Overlay -->
+            <div id="flower-bouquet-overlay" class="flower-bouquet-overlay"></div>
+
+            <!-- Interactive Gift Box in the Center -->
+            <div id="gift-box-container" class="gift-box-container">
+                <div class="gift-box-interactive" id="gift-box-interactive">
+                    <i class="fa-solid fa-gift gift-box-icon"></i>
+                </div>
+                <p class="gift-box-instruction">Ada kado untukmu, ketuk untuk membuka 🎁</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: LOVE-SHAPED MEMORIAL PHOTO GALLERY -->
+        <div id="slide-3" class="romance-slide">
+            <div class="memorial-container">
+                <h2 class="memorial-title glow-text-heart">Our Cozy Memories 💖</h2>
+                <p class="memorial-subtitle">Setiap senyumanmu adalah bintang tercantik di semestaku</p>
+                
+                <!-- Heart-shaped grid of 6 polaroid photos -->
+                <div class="heart-gallery">
+                    <!-- Photo 1: Top Left -->
+                    <div class="photo-card polaroid card-top-left">
+                        <div class="photo-wrapper">
+                            <img src="images/photo1.png" alt="Kenangan 1">
+                        </div>
+                        <span class="photo-caption">Under the Stars ✨</span>
+                    </div>
+                    <!-- Photo 2: Top Right -->
+                    <div class="photo-card polaroid card-top-right">
+                        <div class="photo-wrapper">
+                            <img src="images/photo2.png" alt="Kenangan 2">
+                        </div>
+                        <span class="photo-caption">MyPrinces 💕</span>
+                    </div>
+                    <!-- Photo 3: Mid Left -->
+                    <div class="photo-card polaroid card-mid-left">
+                        <div class="photo-wrapper">
+                            <img src="images/photo3.jpg" alt="Kenangan 3">
+                        </div>
+                        <span class="photo-caption">Pretty Rainbow 🌈</span>
+                    </div>
+                    <!-- Photo 4: Mid Center -->
+                    <div class="photo-card polaroid card-mid-center">
+                        <div class="photo-wrapper">
+                            <img src="images/photo4.png" alt="Kenangan 4">
+                        </div>
+                        <span class="photo-caption">Together Always 👩‍❤️‍👨</span>
+                    </div>
+                    <!-- Photo 5: Mid Right -->
+                    <div class="photo-card polaroid card-mid-right">
+                        <div class="photo-wrapper">
+                            <img src="images/photo5.png" alt="Kenangan 5">
+                        </div>
+                        <span class="photo-caption">Cutest Pose ✌️</span>
+                    </div>
+                    <!-- Photo 6: Bottom Center -->
+                    <div class="photo-card polaroid card-bottom-center">
+                        <div class="photo-wrapper">
+                            <img src="images/photo6.png" alt="Kenangan 6">
+                        </div>
+                        <span class="photo-caption">Sweet Picnics 🧺</span>
+                    </div>
+                </div>
+                
+                <!-- Sweet Message Box -->
+                <div class="memorial-message-box">
+                    <p class="memorial-message-text">
+                        "Sekali lagi...Selamat ulang tahun untuk manusia yang kehadirannya adalah anugerah terindah dari semesta. Abang tahu, dunia luar kadang bising banget, sampai-sampai kalau Adek lagi sedih, Adek lebih memilih bersembunyi di dalam gua kesunyian sendiri. Tapi mulai sekarang, kurangi dikit ya jatah menyendirinya? Kalau dunia Adek lagi mendung, bagi sedihnya ke Abang. Biar Abang nggak cuma kebagian waktu Adeknya lagi dandan cantik atau lagi ketawa aja."
+                    </p>
+                </div>
+                
+                <div class="memorial-footer">
+                    <button id="btn-to-slide-4" class="btn btn-primary pulse-btn">
+                        Mainkan Game Nebula <i class="fa-solid fa-gamepad"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -98,21 +232,21 @@
                         <span class="gesture-emoji">✌️</span>
                         <div class="gesture-info">
                             <span class="gesture-name">Dua Jari (Peace)</span>
-                            <span class="gesture-result">Pesan "I LOVE YOU"</span>
+                            <span class="gesture-result">Ayoo buat dua jari</span>
                         </div>
                     </div>
                     <div class="guide-item" id="guide-mode-5" onclick="changeModeManual(5)">
                         <span class="gesture-emoji">🤟</span>
                         <div class="gesture-info">
                             <span class="gesture-name">Tiga Jari</span>
-                            <span class="gesture-result">Ucapan "HBD PRINCESS"</span>
+                            <span class="gesture-result">Ayoo buat tiga jari bukan Metal yaww</span>
                         </div>
                     </div>
                     <div class="guide-item" id="guide-mode-4" onclick="changeModeManual(4)">
                         <span class="gesture-emoji">✊</span>
                         <div class="gesture-info">
                             <span class="gesture-name">Kepal Tangan</span>
-                            <span class="gesture-result">Bentuk Hati 3D (Surprise)</span>
+                            <span class="gesture-result">(Surprise)</span>
                         </div>
                     </div>
                 </div>
