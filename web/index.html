@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NebulaHeart 3D - Birthday Surprise for Princess 👑</title>
+    
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;600;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome untuk Icon Premium -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Utama -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- CDNs: Three.js & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- CDNs: MediaPipe Hands & Camera Utils -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- ==========================================
+         HALAMAN PENGANTAR / SURAT CINTA (INTRO SCREEN)
+         ========================================== -->
+    <div id="intro-screen" class="intro-screen">
+        <div class="stars-bg-overlay"></div>
+        <div class="letter-card">
+            <div class="letter-header">
+                <i class="fa-solid fa-heart pulse-heart"></i>
+                <h2>For My Princess 👑</h2>
+            </div>
+            <div class="letter-body">
+                <p class="salutation">Dear Princess,</p>
+                <p class="message-paragraph">
+                    Hari ini adalah hari yang sangat istimewa, hari di mana dunia menjadi lebih indah karena kehadiranmu. Selamat ulang tahun! 💖
+                </p>
+                <p class="message-paragraph">
+                    Aku ingin mempersembahkan sesuatu yang berbeda untukmu. Sebuah dunia bintang nebula kecil yang diciptakan khusus untuk menari mengikuti gerakan tanganmu. 
+                </p>
+                <p class="message-paragraph">
+                    Izinkan kamera di perangkatmu setelah mengklik tombol di bawah, ikuti panduan gestur tangannya, dan lihat pesan bintang yang tersimpan di dalamnya.
+                </p>
+                <p class="signature">With love, <br><span>Your Prince</span></p>
+            </div>
+            <div class="letter-footer">
+                <button id="start-btn" class="btn btn-primary pulse-btn">
+                    Buka Kejutan 🎁
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Utama untuk Grafis 3D Three.js -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- Kontainer Halaman Utama (Glassmorphism Overlay) -->
+    <div class="overlay-container">
+        
+        <!-- Header Aplikasi -->
+        <header class="app-header">
+            <h1 class="glow-text">NebulaHeart 3D</h1>
+            <p class="subtitle">Interactive Birthday Surprise for Princess 👑</p>
+        </header>
+
+        <!-- Panel Kontrol Utama -->
+        <main class="control-panel">
+            <!-- Status Deteksi Kamera -->
+            <div class="status-box">
+                <span class="status-dot" id="status-dot"></span>
+                <span class="status-text" id="status-text">Memuat model AI...</span>
+            </div>
+
+            <!-- Petunjuk Gestur Tangan (Interactive List) -->
+            <div class="gesture-guide">
+                <h3><i class="fa-solid fa-hand-sparkles"></i> Petunjuk Gestur Tangan</h3>
+                <div class="guide-items">
+                    <div class="guide-item active" id="guide-mode-1" onclick="changeModeManual(1)">
+                        <span class="gesture-emoji">✋</span>
+                        <div class="gesture-info">
+                            <span class="gesture-name">Tangan Terbuka</span>
+                            <span class="gesture-result">Kosmos / Bintang (Mulai)</span>
+                        </div>
+                    </div>
+                    <div class="guide-item" id="guide-mode-2" onclick="changeModeManual(2)">
+                        <span class="gesture-emoji">☝️</span>
+                        <div class="gesture-info">
+                            <span class="gesture-name">Satu Jari</span>
+                            <span class="gesture-result">Planet Saturnus 3D</span>
+                        </div>
+                    </div>
+                    <div class="guide-item" id="guide-mode-3" onclick="changeModeManual(3)">
+                        <span class="gesture-emoji">✌️</span>
+                        <div class="gesture-info">
+                            <span class="gesture-name">Dua Jari (Peace)</span>
+                            <span class="gesture-result">Pesan "I LOVE YOU"</span>
+                        </div>
+                    </div>
+                    <div class="guide-item" id="guide-mode-5" onclick="changeModeManual(5)">
+                        <span class="gesture-emoji">🤟</span>
+                        <div class="gesture-info">
+                            <span class="gesture-name">Tiga Jari</span>
+                            <span class="gesture-result">Ucapan "HBD PRINCESS"</span>
+                        </div>
+                    </div>
+                    <div class="guide-item" id="guide-mode-4" onclick="changeModeManual(4)">
+                        <span class="gesture-emoji">✊</span>
+                        <div class="gesture-info">
+                            <span class="gesture-name">Kepal Tangan</span>
+                            <span class="gesture-result">Bentuk Hati 3D (Surprise)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontrol Audio/BGM -->
+            <div class="music-box">
+                <button id="music-toggle" class="btn btn-secondary">
+                    <i class="fa-solid fa-music"></i> Putar Musik Romantis
+                </button>
+                <div class="sound-indicator" id="sound-indicator">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <!-- Catatan Kaki/Petunjuk Alternatif -->
+            <div class="footer-note">
+                <p><i class="fa-solid fa-keyboard"></i> <strong>Tips:</strong> Klik item gestur di atas atau tekan tombol angka <strong>1 - 5</strong> di keyboard untuk mengganti mode secara manual jika tanpa kamera!</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Camera Container (Tampilan Webcam Pengguna) -->
+    <div class="camera-container drag-handle" id="camera-box">
+        <div class="camera-header">
+            <span><i class="fa-solid fa-video"></i> Hand Tracker</span>
+            <button id="minimize-camera" title="Sembunyikan Kamera"><i class="fa-solid fa-minus"></i></button>
+        </div>
+        <div class="camera-body">
+            <!-- Video Input (Tersembunyi tapi aktif) -->
+            <video id="webcam-video" autoplay playsinline muted></video>
+            <!-- Canvas untuk menggambar garis landmark tangan (Overlay di atas video) -->
+            <canvas id="camera-overlay-canvas"></canvas>
+            <div class="camera-loading" id="camera-loading">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Mengaktifkan Kamera...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tombol untuk memunculkan kembali kamera jika di-minimize -->
+    <button id="restore-camera" class="btn-restore-camera" style="display: none;" title="Tampilkan Kamera">
+        <i class="fa-solid fa-camera"></i>
+    </button>
+
+    <!-- Elemen Audio untuk Musik Latar -->
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Javascript Utama -->
+    <script src="script.js"></script>
+</body>
+</html>
